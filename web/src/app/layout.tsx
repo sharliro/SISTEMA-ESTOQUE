@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Sistema de Estoque',
-  description: 'Painel de estoque com controle de entradas e saidas',
+  description: 'Painel do Sistema de Controle de Estoque GTIC',
 };
 
 export default function RootLayout({
