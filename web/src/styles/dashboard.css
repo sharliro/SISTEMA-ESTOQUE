@@ -397,6 +397,34 @@
   padding: 12px;
 }
 
+/* Hide native date picker icon (keep only custom white icon) */
+.date-input {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+  padding: 8px 10px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+.date-input::-webkit-inner-spin-button,
+.date-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox: force textfield appearance so the calendar button is hidden */
+.date-input::-moz-focus-inner {
+  border: 0;
+}
+
 .line {
   fill: none;
   stroke-width: 2;

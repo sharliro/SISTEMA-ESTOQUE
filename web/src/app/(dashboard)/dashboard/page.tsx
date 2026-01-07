@@ -114,7 +114,7 @@ export default function DashboardPage() {
         <div className="card">
           <h3>Itens cadastrados</h3>
           <strong>{products.length}</strong>
-          <span className="muted">Total de produtos no catalogo.</span>
+          <span className="muted">Total de itens em estoque.</span>
         </div>
         <div className="card">
           <h3>Em estoque</h3>
