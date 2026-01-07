@@ -1,0 +1,67 @@
+:root {
+  --bg: #0b0b10;
+  --bg-2: #15151f;
+  --card: #171823;
+  --card-2: rgba(255, 255, 255, 0.04);
+  --text: #f4f4f8;
+  --muted: #b7b9c8;
+  --accent: #ffb44d;
+  --accent-2: #4ad1d9;
+  --accent-3: #7a6cf6;
+  --danger: #ff6b6b;
+  --ok: #6be38a;
+  --border: rgba(255, 255, 255, 0.08);
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(74, 209, 217, 0.18), transparent 40%),
+    radial-gradient(circle at 20% 20%, rgba(255, 180, 77, 0.2), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(122, 108, 246, 0.2), transparent 35%),
+    #0b0b10;
+  font-family: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  min-height: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatGlow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@import '../styles/main.css';

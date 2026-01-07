@@ -1,0 +1,77 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  matricula    String?
+  passwordHash String
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+  movements    Movement[]
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  code         Int      @unique @default(autoincrement())
+  name         String
+  manufacturer String?
+  model        String?
+  nfe          String?
+  dtNfe        DateTime?
+  dtInclu      DateTime?
+  horaInclu    String?
+  quantity     Int      @default(0)
+  nchagpc      String?
+  sector       String?
+  unit         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  movements    Movement[]
+}
+
+model Unit {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  sectors   Sector[]
+  createdAt DateTime @default(now())
+}
+
+model Sector {
+  id        String   @id @default(uuid())
+  name      String
+  unitId    String
+  unit      Unit     @relation(fields: [unitId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([name, unitId])
+}
+
+model Movement {
+  id        String        @id @default(uuid())
+  productId String
+  userId    String
+  type      MovementType
+  quantity  Int
+  createdAt DateTime      @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+}
