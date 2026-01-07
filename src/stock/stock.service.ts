@@ -12,7 +12,7 @@ export class StockService {
     return this.prisma.$transaction(async (tx) => {
       const product = await tx.product.findUnique({ where: { id: dto.productId } });
       if (!product) {
-        throw new NotFoundException('Product not found');
+        throw new NotFoundException('Produto nao encontrado');
       }
       const updated = await tx.product.update({
         where: { id: product.id },
@@ -68,10 +68,10 @@ export class StockService {
     return this.prisma.$transaction(async (tx) => {
       const product = await tx.product.findUnique({ where: { id: dto.productId } });
       if (!product) {
-        throw new NotFoundException('Product not found');
+        throw new NotFoundException('Produto nao encontrado');
       }
       if (product.quantity < dto.quantity) {
-        throw new BadRequestException('Insufficient stock');
+        throw new BadRequestException('Estoque insuficiente');
       }
       const updated = await tx.product.update({
         where: { id: product.id },

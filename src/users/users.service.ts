@@ -10,7 +10,7 @@ export class UsersService {
   async create(dto: CreateUserDto) {
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (existing) {
-      throw new ConflictException('Email already in use');
+      throw new ConflictException('Email ja cadastrado');
     }
     const passwordHash = await bcrypt.hash(dto.password, 10);
     return this.prisma.user.create({
@@ -39,7 +39,7 @@ export class UsersService {
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuario nao encontrado');
     }
     return {
       id: user.id,
