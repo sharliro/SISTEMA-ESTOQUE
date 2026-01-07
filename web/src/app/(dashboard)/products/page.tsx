@@ -71,21 +71,13 @@ export default function ProductsPage() {
       <header className="page-header">
         <div>
           <h1>Pesquisa</h1>
-          <p>Cadastro e consulta dos itens em estoque.</p>
+          <p>Consulta dos produtos em estoque.</p>
         </div>
       </header>
 
       <section className="form-card" style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 0, flexWrap: 'wrap' }}>
-          <button
-            className="ghost"
-            type="button"
-            onClick={() => setSortOrder(sortOrder === 'name-asc' ? 'name-desc' : 'name-asc')}
-            title={sortOrder === 'name-asc' ? 'Ordenação: Nome A→Z (clique para inverter)' : 'Ordenação: Nome Z→A (clique para inverter)'}
-            style={{ minWidth: 80, padding: '8px 10px' }}
-          >
-            {sortOrder === 'name-asc' ? 'A→Z' : 'Z→A'}
-          </button>
+         
 
           <input
             ref={productInputRef}
@@ -97,46 +89,6 @@ export default function ProductsPage() {
             style={{ minWidth: 180, padding: '8px 10px' }}
           />
           
-          <input
-            placeholder="Fabricante"
-            list="manufacturer-filter-names"
-            value={searchInputs.manufacturer}
-            onChange={(e) => setSearchInputs({ ...searchInputs, manufacturer: e.target.value })}
-            style={{ minWidth: 160, padding: '8px 10px' }}
-          />
-          <input
-            placeholder="Modelo"
-            list="model-filter-names"
-            value={searchInputs.model}
-            onChange={(e) => setSearchInputs({ ...searchInputs, model: e.target.value })}
-            style={{ minWidth: 160, padding: '8px 10px' }}
-          />
-          <select
-            value={searchInputs.unitId}
-            onChange={(e) => {
-              const uid = e.target.value;
-              setSearchInputs({ ...searchInputs, unitId: uid, sectorId: '' });
-              const unit = availableUnits.find((u) => u.id === uid);
-              setAvailableSectors(unit?.sectors ?? []);
-            }}
-            style={{ minWidth: 160, padding: '8px 10px' }}
-          >
-            <option value="">Unidade</option>
-            {availableUnits.map((u) => (
-              <option key={u.id} value={u.id}>{u.name}</option>
-            ))}
-          </select>
-          <select
-            value={searchInputs.sectorId}
-            onChange={(e) => setSearchInputs({ ...searchInputs, sectorId: e.target.value })}
-            style={{ minWidth: 160, padding: '8px 10px' }}
-          >
-            <option value="">Setor</option>
-            {availableSectors.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-
           <button className="ghost" type="button" onClick={() => setFilters(searchInputs)}>
             Aplicar
           </button>
@@ -199,7 +151,7 @@ export default function ProductsPage() {
               if (sortedProducts.length === 0) {
                 return (
                   <tr>
-                    <td colSpan={12}>Nenhum produto em estoque corresponde aos filtros atuais.</td>
+                    <td colSpan={12}>Produto não encontrado</td>
                   </tr>
                 );
               }

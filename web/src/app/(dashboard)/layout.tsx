@@ -17,8 +17,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="app-shell">
         <aside className="sidebar">
           <div className="brand">
-            <span>Estoque</span>
-            <small>Controle</small>
+            <span>Estoque | GTIC</span>
+            <small>Versão 1.0|ano 2026</small>
           </div>
           <nav>
             {navItems.map((item) => (
