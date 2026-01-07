@@ -2,7 +2,7 @@ import { getToken } from './auth';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-type ApiOptions = RequestInit & {
+type ApiOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;
 };
 
