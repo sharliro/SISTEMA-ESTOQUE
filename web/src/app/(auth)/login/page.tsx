@@ -35,10 +35,10 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="logo">
-          <span className="logo-mark">SISTEMA DE CONTROLE DE ESTOQUE</span>
+          <span className="logo-mark">S C E</span>
           <span className="logo-text">GTIC</span>
         </div>
-        <p className="logo-subtitle"></p>
+        <p className="logo-subtitle">Sistema de Controle de Estoque</p>
         <h1>Entrar</h1>
         <p>Acesse o painel do estoque</p>
         <form className="auth-form" onSubmit={handleSubmit}>
