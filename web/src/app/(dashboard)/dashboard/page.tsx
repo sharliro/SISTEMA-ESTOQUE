@@ -104,9 +104,9 @@ export default function DashboardPage() {
       <header className="page-header">
         <div>
           <h1>Dashboard</h1>
-          <p>Resumo do estoque e ultimas movimentacoes.</p>
+          <p>Resumo do estoque e últimas movimentações.</p>
         </div>
-        <Link className="primary" href="/movements">
+        <Link className="primary" href="/movements?tab=entry">
           Nova entrada
         </Link>
       </header>
@@ -119,16 +119,16 @@ export default function DashboardPage() {
         <div className="card">
           <h3>Em estoque</h3>
           <strong>{totalItems}</strong>
-          <span className="muted">Quantidade total disponivel.</span>
+          <span className="muted">Quantidade total disponível.</span>
         </div>
         <div className="card">
-          <h3>Saidas hoje</h3>
+          <h3>Saídas hoje</h3>
           <strong>{todayOut}</strong>
-          <span className="muted">Movimentacoes registradas hoje.</span>
+          <span className="muted">Movimentações registradas hoje.</span>
         </div>
       </section>
       <section className="table-card">
-        <h3>Ultimas movimentacoes</h3>
+        <h3>últimas movimentações</h3>
         <table>
           <thead>
             <tr>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
           <tbody>
             {movements.length === 0 ? (
               <tr>
-                <td colSpan={4}>Sem movimentacoes registradas.</td>
+                <td colSpan={4}>Sem movimentações registradas.</td>
               </tr>
             ) : (
               movements.map((item) => (
@@ -158,14 +158,14 @@ export default function DashboardPage() {
       </section>
       <section className="table-card">
         <div className="chart-header">
-          <h3>Movimentacoes por periodo</h3>
+          <h3>movimentações por período</h3>
           <div className="chart-actions">
             <button
               className={period === 'day' ? 'pill active' : 'pill'}
               type="button"
               onClick={() => setPeriod('day')}
             >
-              Diario
+              Diário
             </button>
             <button
               className={period === 'week' ? 'pill active' : 'pill'}
@@ -216,7 +216,7 @@ export default function DashboardPage() {
         </div>
         <div className="chart">
           {summary.length === 0 ? (
-            <p className="muted">Sem dados para o periodo.</p>
+            <p className="muted">Sem dados para o período.</p>
           ) : chartMode === 'bars' ? (
             summary.map((item) => (
               <div key={item.bucket} className="chart-row">

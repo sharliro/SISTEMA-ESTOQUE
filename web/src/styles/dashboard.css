@@ -44,7 +44,16 @@
   backdrop-filter: blur(16px);
 }
 
+#GTICCOLOR {
+  color: #18cc18;
+}
+#ESTOQUELOGCOLOR {
+  font-size: 25px;
+  color: #ffb44d;
+}
+
 .brand {
+  color: #bee432;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -53,8 +62,9 @@
 }
 
 .brand small {
+  color: #1a1200;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.2em;
 }
@@ -91,6 +101,26 @@
   padding: 32px 40px;
   position: relative;
   z-index: 1;
+}
+
+/* Position user header at top-right of the content area */
+.main-header {
+  position: relative;
+  min-height: 48px;
+}
+
+.main-header .user-info {
+  position: absolute;
+  top: 12px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.main-header .user-info span {
+  font-weight: 600;
+  color: var(--text);
 }
 
 .page {
@@ -176,6 +206,11 @@
 .ghost:hover {
   border-color: rgba(90, 224, 229, 0.4);
   background: rgba(90, 224, 229, 0.08);
+}
+.form-card.leftwide {
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .grid {
@@ -382,6 +417,18 @@
   font-weight: 600;
 }
 
+/* hover for inactive tab - subtle orange tint */
+.tab:hover {
+  background: linear-gradient(130deg, rgba(255,180,77,0.08), rgba(255,158,44,0.08));
+  color: #ff9e2c;
+}
+
+/* hover effect for active tab - stronger highlight */
+.tab.active:hover {
+  filter: brightness(0.97);
+  box-shadow: 0 6px 18px rgba(255,158,44,0.18);
+}
+
 .line-chart {
   display: flex;
   flex-direction: column;
@@ -497,17 +544,27 @@
 }
 
 .logo-mark {
-  color: var(--accent-2);
+ font-size: 35px;
+  color: #ffb44d;;
+ 
+}
+#versaotxt {
+  color: #ffffff;
+  font-size: 10px;
+  margin-top: -35px;
+  margin-bottom: 10px;
 }
 
 .logo-text {
-  color: var(--accent);
+  font-size: 35px;
+  color:#18cc18;
+  
 }
 
 .logo-subtitle {
   margin: 0 0 20px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.2em;
 }
@@ -560,7 +617,42 @@
   align-items: end;
 }
 
+/* Use this class to make form inputs display uppercase (apply to suppliers form only) */
+.uppercase-inputs input,
+.uppercase-inputs select {
+  text-transform: uppercase;
+}
+
+/* Input with suffix (email user + domain) */
+.input-with-suffix {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-with-suffix input {
+  flex: 1;
+}
+
+.suffix {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* When modal is open, hide page chrome and show only the centered full-screen form */
+body.modal-open .app-shell > aside,
+body.modal-open .page-header,
+body.modal-open .content > :not(.form-card.full-screen) {
+  display: none !important;
+}
+
 .grid-form label {
+  text-transform: uppercase;
+
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -571,10 +663,11 @@
 .grid-form input,
 .grid-form select {
   background: rgba(15, 15, 21, 0.9);
-  border: 1px solid var(--border);
+  border: 1px solid #000; /* unified black border for select elements */
   border-radius: 12px;
   padding: 12px;
   color: var(--text);
+  text-transform: uppercase;
   transition: border-color 0.2s ease;
 }
 
@@ -603,6 +696,145 @@
   border-radius: 12px;
   padding: 10px 12px;
   color: var(--text);
+}
+
+/* Inline multi-field form row (responsive) */
+.inline-form-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.inline-form-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+  margin: 0;
+}
+
+.inline-form-row .input-with-suffix {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.inline-form-row input,
+.inline-form-row select {
+  background: rgba(15, 15, 21, 0.9);
+  border: 1px solid #000; /* unified black border */
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--text);
+}
+
+.inline-form-row button.primary {
+  height: 40px;
+  align-self: flex-end;
+  margin-left: 6px;
+}
+
+@media (max-width: 900px) {
+  .inline-form-row label {
+    min-width: 46%;
+  }
+  .inline-form-row button.primary {
+    min-width: 100%;
+    align-self: stretch;
+  }
+}
+
+.form-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-card.centered {
+  max-width: 920px;
+  margin: 24px auto;
+  padding: 28px;
+}
+
+.form-card.leftwide {
+  max-width: 750px;
+  width: calc(100% - 48px);
+  margin: 24px 24px;
+  padding: 28px;
+}
+
+.form-rows label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1.5px solid rgba(255,255,255,0.04);
+}
+
+.form-rows label:last-child {
+  border-bottom: none;
+}
+
+.form-rows label span {
+  min-width: 160px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-rows label input,
+.form-rows label select {
+  flex: 1;
+  background: rgba(15, 15, 21, 0.9);
+  border: 1px solid #000; /* unified black border */
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text);
+  text-transform: uppercase;
+  transition: border-color 0.2s ease;
+}
+
+/* Modal backdrop when form is open */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 30;
+}
+
+/* Centered full-screen form */
+.form-card.full-screen {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(920px, 94%);
+  z-index: 40;
+  padding: 24px;
+  border-radius: 14px;
+}
+
+.form-rows.centered {
+  max-height: 76vh;
+  overflow: auto;
+  padding-right: 8px;
+}
+
+/* Make datalist-backed inputs look like selects */
+.select-control {
+  background: rgba(15, 15, 21, 0.98);
+  border: 1px solid #000; /* unified black border for select-like inputs */
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--text);
+  min-width: 160px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.06) 50%), linear-gradient(135deg, rgba(255,255,255,0.06) 50%, transparent 50%);
+  background-position: calc(100% - 16px) calc(1em), calc(100% - 11px) calc(1em);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
 }
 
 .units-grid {
@@ -724,6 +956,7 @@
 }
 
 .logout {
+  right: 50px;
   padding: 6px 12px;
   font-size: 12px;
 }

@@ -1,14 +1,39 @@
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
-import LogoutButton from '@/components/LogoutButton';
+import UserHeader from '@/components/UserHeader';
+import '@/styles/dashboard.css';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/products', label: 'Estoque' },
-  { href: '/movements', label: 'Entradas/Saidas' },
-  { href: '/records', label: 'Registros' },
-  { href: '/units', label: 'Unidades/Setores' },
-  { href: '/users', label: 'Usuarios' },
+const navSections = [
+  {
+    
+    items: [{ href: '/dashboard', label: 'Dashboard' }]
+  },
+  {
+    title: 'Gerenciamento',
+    items: [
+      { href: '/products', label: 'Produtos' },
+      { href: '/suppliers', label: 'Fornecedores' },
+      { href: '/manufacturers', label: 'Fabricantes' }
+    ]
+  },
+  {
+    title: 'Movimentação',
+    items: [
+      { href: '/movements?tab=entry', label: 'Entradas' },
+      { href: '/movements?tab=exit', label: 'Saídas' }
+    ]
+  },
+  {
+    title: 'Relatórios',
+    items: [{ href: '/records', label: 'Relatorios' }]
+  },
+  {
+    title: 'Administração',
+    items: [
+      { href: '/units', label: 'Unidades/Setores' },
+      { href: '/users', label: 'Usuários' }
+    ]
+  }
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -16,23 +41,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <AuthGuard>
       <div className="app-shell">
         <aside className="sidebar">
-          <div className="brand">
-            <span>Estoque | GTIC</span>
-            <small>Versão 1.0|ano 2026</small>
-          </div>
+          <div className="logo">
+            <span id = "ESTOQUELOGCOLOR">SCE</span>
+            <span id='GTICCOLOR'> | GTIC</span>
+            </div>
+            <div id = "versaotxt"><p>SISTEMA DE CONTROLE DE ESTOQUE VERSÃO 1.0 | ANO 2026</p></div>
           <nav>
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href} className="nav-link">
-                {item.label}
-              </Link>
+            {navSections.map((section) => (
+              <div key={section.title} className="nav-section">
+                <h4 className="nav-section-title">{section.title}</h4>
+                {section.items.map((item) => (
+                  <Link key={item.href} href={item.href} className="nav-link">
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             ))}
           </nav>
-          <div className="sidebar-footer">
-            <span>Admin</span>
-            <LogoutButton />
-          </div>
         </aside>
-        <main className="content">{children}</main>
+        <main className="content">
+          <header className="main-header">
+            <UserHeader />
+          </header>
+          {children}
+        </main>
       </div>
     </AuthGuard>
   );

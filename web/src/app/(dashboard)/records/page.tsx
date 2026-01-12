@@ -22,6 +22,7 @@ type Movement = {
     unit: string | null;
   };
   user: { name: string | null; matricula: string | null };
+  supplier?: { name: string; contact?: string | null; email?: string | null; phone?: string | null } | null;
 };
 
 type Product = {
@@ -126,7 +127,7 @@ export default function RecordsPage() {
       <header className="page-header">
         <div>
           <h1>Registros</h1>
-          <p>Consulta de entradas e saidas com filtros e busca.</p>
+          <p>Consulta de entradas e saídas com filtros e busca.</p>
         </div>
       </header>
 
@@ -144,7 +145,7 @@ export default function RecordsPage() {
             className={activeTab === 'OUT' ? 'tab active' : 'tab'}
             onClick={() => setActiveTab('OUT')}
           >
-            Saidas
+            saídas
           </button>
         </div>
 
@@ -241,17 +242,17 @@ export default function RecordsPage() {
             <tr>
               <th>Codigo</th>
               <th>Produto</th>
-              <th>Tipo</th>
               <th>Fabricante</th>
               <th>Modelo</th>
               <th>NFE</th>
               <th>Data NFE</th>
-              <th>Data inclusao</th>
-              <th>Hora inclusao</th>
+              <th>Data inclusão</th>
+              <th>Hora inclusão</th>
               <th>Quantidade</th>
               <th>NCHAGPC</th>
               <th>Setor</th>
               <th>Unidade</th>
+              <th>Fornecedor</th>
               <th>Usuario</th>
               <th>Matricula</th>
               <th>Data</th>
@@ -260,14 +261,14 @@ export default function RecordsPage() {
           <tbody>
             {movements.length === 0 ? (
               <tr>
-                <td colSpan={16}>Nenhum registro encontrado.</td>
+                <td colSpan={17}>Nenhum registro encontrado.</td>
               </tr>
             ) : (
               movements.map((item) => (
                 <tr key={item.id}>
                   <td>{item.product.code}</td>
                   <td>{item.product.name}</td>
-                  <td>{item.type === 'IN' ? 'Entrada' : 'Saida'}</td>
+            
                   <td>{item.product.manufacturer || '-'}</td>
                   <td>{item.product.model || '-'}</td>
                   <td>{item.product.nfe || '-'}</td>
@@ -286,6 +287,7 @@ export default function RecordsPage() {
                   <td>{item.product.nchagpc || '-'}</td>
                   <td>{item.product.sector || '-'}</td>
                   <td>{item.product.unit || '-'}</td>
+                  <td>{item.supplier?.name || '-'}</td>
                   <td>{item.user?.name || '-'}</td>
                   <td>{item.user?.matricula || '-'}</td>
                   <td>{new Date(item.createdAt).toLocaleString('pt-BR')}</td>

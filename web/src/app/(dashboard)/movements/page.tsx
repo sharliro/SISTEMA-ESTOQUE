@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
+import { isValidIsoDate, isLeapYear } from '@/lib/date';
 
 type Product = {
   id: string;
@@ -12,6 +14,14 @@ type Product = {
   nchagpc?: string | null;
   sector?: string | null;
   unit?: string | null;
+};
+
+type Supplier = {
+  id: string;
+  name: string;
+  contact?: string | null;
+  email?: string | null;
+  phone?: string | null;
 };
 
 type Movement = {
@@ -33,9 +43,13 @@ type Movement = {
     unit: string | null;
   };
   user: { name: string | null; matricula: string | null };
+  supplier?: { name: string; contact?: string | null; email?: string | null; phone?: string | null } | null;
 };
 
 export default function MovementsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
   const [products, setProducts] = useState<Product[]>([]);
   const [movements, setMovements] = useState<Movement[]>([]);
   const [productId, setProductId] = useState('');
@@ -51,9 +65,11 @@ export default function MovementsPage() {
     nchagpc: '',
     sector: '',
     unit: '',
+    supplierId: '',
   });
   const [dtNfeError, setDtNfeError] = useState('');
   const dtNfeRef = useRef<HTMLInputElement | null>(null);
+  const lastValidDtRef = useRef<string>(entryForm.dtNfe);
   const openDatePicker = () => {
     const el = dtNfeRef.current;
     if (!el) return;
@@ -73,6 +89,7 @@ export default function MovementsPage() {
   type UnitOption = { id: string; name: string; sectors: { id: string; name: string }[] };
   const [availableUnits, setAvailableUnits] = useState<UnitOption[]>([]);
   const [availableSectors, setAvailableSectors] = useState<{ id: string; name: string }[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
   // exitForm stores unitId and sectorId (IDs from /units API) and nchagpc
   const [exitForm, setExitForm] = useState({ nchagpc: '', sectorId: '', unitId: '' });
@@ -108,9 +125,24 @@ export default function MovementsPage() {
   const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
   const [manufacturerSuggestions, setManufacturerSuggestions] = useState<string[]>([]);
   const [modelSuggestions, setModelSuggestions] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'entry' | 'exit'>('entry');
+  const [activeTab, setActiveTab] = useState<'entry' | 'exit'>(
+    tabParam === 'exit' ? 'exit' : 'entry',
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (tabParam === 'entry' || tabParam === 'exit') {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const setTab = (tab: 'entry' | 'exit') => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   const loadData = async () => {
     try {
@@ -138,6 +170,15 @@ export default function MovementsPage() {
       } catch (uErr) {
         console.error('failed to load units', uErr);
         setAvailableUnits([]);
+      }
+
+      // fetch suppliers
+      try {
+        const suppliersData = await apiFetch<Supplier[]>('/suppliers');
+        setSuppliers(suppliersData);
+      } catch (sErr) {
+        console.error('failed to load suppliers', sErr);
+        setSuppliers([]);
       }
     } catch (err) {
       console.error(err);
@@ -268,6 +309,7 @@ export default function MovementsPage() {
           body: {
             productId: existingExact.id,
             quantity: Number(entryForm.quantity) || 1,
+            supplierId: entryForm.supplierId || undefined,
           },
         });
       } else if (existingCore) {
@@ -277,6 +319,7 @@ export default function MovementsPage() {
           body: {
             productId: existingCore.id,
             quantity: Number(entryForm.quantity) || 1,
+            supplierId: entryForm.supplierId || undefined,
           },
         });
       } else {
@@ -290,6 +333,7 @@ export default function MovementsPage() {
             nfe: entryForm.nfe || undefined,
             dtNfe: entryForm.dtNfe || undefined,
             quantity: Number(entryForm.quantity) || 1,
+            supplierId: entryForm.supplierId || undefined,
           },
         });
       }
@@ -304,7 +348,9 @@ export default function MovementsPage() {
         nchagpc: '',
         sector: '',
         unit: '',
+        supplierId: '',
       });
+      lastValidDtRef.current = today;
       await loadData();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao registrar entrada';
@@ -323,7 +369,23 @@ export default function MovementsPage() {
     setError('');
     try {
       const body: any = { productId, quantity: Number(quantity) };
-      // Do not send nchagpc/unitId/sectorId to avoid validation errors on current backend
+      // Enforce client-side max per exit operation
+      if (type === 'exit' && Number(quantity) > 5) {
+        setError('Quantidade máxima por saída é 5 unidades');
+        setLoading(false);
+        return;
+      }
+      // For exits, include nchagpc, unitId and sectorId (backend requires them)
+      if (type === 'exit') {
+        if (!exitForm.unitId || !exitForm.sectorId) {
+          setError('Unidade e setor são obrigatórios para saída');
+          setLoading(false);
+          return;
+        }
+        body.nchagpc = exitForm.nchagpc || undefined;
+        body.unitId = exitForm.unitId || undefined;
+        body.sectorId = exitForm.sectorId || undefined;
+      }
       await apiFetch(`/stock/${type}`, {
         method: 'POST',
         body,
@@ -343,32 +405,16 @@ export default function MovementsPage() {
     <div className="page">
       <header className="page-header">
         <div>
-          <h1>Registros</h1>
-          <p>Entrada cadastra o item no estoque. Saida seleciona o item correto.</p>
+          <h1>{activeTab === 'entry' ? 'Registrar Entradas' : 'Registrar Saídas'}</h1>
+          <p>{activeTab === 'entry' ? '' : ''}</p>
         </div>
       </header>
 
       <section className="form-card">
-        <div className="tabs">
-          <button
-            type="button"
-            className={activeTab === 'entry' ? 'tab active' : 'tab'}
-            onClick={() => setActiveTab('entry')}
-          >
-            Entrada
-          </button>
-          <button
-            type="button"
-            className={activeTab === 'exit' ? 'tab active' : 'tab'}
-            onClick={() => setActiveTab('exit')}
-          >
-            Saida
-          </button>
-        </div>
 
         {activeTab === 'entry' ? (
           <>
-            <h3>Entrada (cadastro do item)</h3>
+            
 
             <form className="grid-form" onSubmit={handleEntry}>
               <label>
@@ -403,8 +449,11 @@ export default function MovementsPage() {
               <label>
                 NFE
                 <input
+                  className="select-control"
+                  inputMode="numeric"
+                  pattern="\d*"
                   value={entryForm.nfe}
-                  onChange={(event) => setEntryForm({ ...entryForm, nfe: event.target.value })}
+                  onChange={(event) => setEntryForm({ ...entryForm, nfe: (event.target.value || '').replace(/\D/g, '') })}
                 />
               </label>
               <label>
@@ -417,42 +466,111 @@ export default function MovementsPage() {
                     value={entryForm.dtNfe}
                     max={today}
                     onChange={(event) => {
-                      const v = event.target.value;
+                      const prev = lastValidDtRef.current;
+                      let v = event.target.value.trim();
                       // allow empty
                       if (!v) {
                         setEntryForm({ ...entryForm, dtNfe: '' });
+                        lastValidDtRef.current = '';
                         setDtNfeError('');
                         return;
                       }
+
+                      // accept dd/mm/yyyy and convert to ISO
+                      let sanitized = v;
+                      if (/^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
+                        const [dd, mm, yyyy] = v.split('/').map(Number);
+                        if (mm === 2 && dd === 29 && !isLeapYear(yyyy)) {
+                          setDtNfeError(`Data inválida — ${yyyy} não é ano bissexto (29/02/${yyyy} não existe)`);
+                          setEntryForm({ ...entryForm, dtNfe: prev });
+                          if (dtNfeRef.current) dtNfeRef.current.value = prev || '';
+                          return;
+                        }
+                        sanitized = `${String(yyyy).padStart(4, '0')}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+                      }
+
+                      // Defensive leap-year check: block explicit 29/02 on non-leap years
+                      if (/^\d{4}-02-29$/.test(sanitized)) {
+                        const y = Number(sanitized.slice(0,4));
+                        if (!isLeapYear(y)) {
+                          setDtNfeError(`Data inválida — ${y} não é ano bissexto (29/02/${y} não existe)`);
+                          setEntryForm({ ...entryForm, dtNfe: prev });
+                          if (dtNfeRef.current) dtNfeRef.current.value = prev || '';
+                          return;
+                        }
+                      }
+
                       // Prevent future date
-                      if (v > today) {
+                      if (sanitized > today) {
                         setDtNfeError('Data não pode ser no futuro');
+                        setEntryForm({ ...entryForm, dtNfe: prev });
+                        if (dtNfeRef.current) dtNfeRef.current.value = prev || '';
                         return;
                       }
                       // Enforce max length YYYY-MM-DD
-                      let sanitized = v.slice(0, 10);
+                      sanitized = sanitized.slice(0, 10);
                       // Progressive validation: year max 4 dígitos, month/day max 2
                       const partialRegex = /^\d{0,4}(-\d{0,2}(-\d{0,2})?)?$/;
                       const parts = sanitized.split('-');
                       if (parts[0] && parts[0].length > 4) {
                         setDtNfeError('O ano não pode ter mais que 4 dígitos');
+                        setEntryForm({ ...entryForm, dtNfe: prev });
+                        if (dtNfeRef.current) dtNfeRef.current.value = prev || '';
                         return;
                       }
                       if (!partialRegex.test(sanitized)) {
                         setDtNfeError('Data inválida — use formato AAAA-MM-DD');
+                        setEntryForm({ ...entryForm, dtNfe: prev });
+                        if (dtNfeRef.current) dtNfeRef.current.value = prev || '';
                         return;
                       }
                       // If fully formed date, validate full format
                       if (/^\d{4}-\d{2}-\d{2}$/.test(sanitized)) {
-                        // simple check for month/day ranges
+                        // simple check for month/day ranges and leap year
                         const [y, m, d] = sanitized.split('-').map(Number);
-                        if (m < 1 || m > 12 || d < 1 || d > 31) {
-                          setDtNfeError('Data inválida');
+                        if (m === 2 && d === 29 && !isLeapYear(y)) {
+                          setDtNfeError(`Data inválida — ${y} não é ano bissexto (29/02/${y} não existe)`);
+                          setEntryForm({ ...entryForm, dtNfe: prev });
+                          if (dtNfeRef.current) dtNfeRef.current.value = prev || '';
                           return;
                         }
+                        if (m < 1 || m > 12 || d < 1 || d > 31) {
+                          setDtNfeError('Data inválida');
+                          setEntryForm({ ...entryForm, dtNfe: prev });
+                          if (dtNfeRef.current) dtNfeRef.current.value = prev || '';
+                          return;
+                        }
+                        if (!isValidIsoDate(sanitized)) { setDtNfeError('Data inválida'); setEntryForm({ ...entryForm, dtNfe: prev }); if (dtNfeRef.current) dtNfeRef.current.value = prev || ''; return; }
                       }
                       setDtNfeError('');
                       setEntryForm({ ...entryForm, dtNfe: sanitized });
+                      lastValidDtRef.current = sanitized;
+                    }}
+                    onBlur={(e) => {
+                      const prev = lastValidDtRef.current;
+                      let v = (e.target as HTMLInputElement).value.trim();
+                      if (!v) { setDtNfeError(''); lastValidDtRef.current = ''; return; }
+                      let sanitized = v;
+                      if (/^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
+                        const [dd, mm, yyyy] = v.split('/').map(Number);
+                        sanitized = `${String(yyyy).padStart(4, '0')}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+                      }
+                      // Defensive leap-year check for 29/02
+                      if (/^\d{4}-02-29$/.test(sanitized)) {
+                        const y = Number(sanitized.slice(0,4));
+                        if (!isLeapYear(y)) {
+                          setDtNfeError(`Data inválida — ${y} não é ano bissexto (29/02/${y} não existe)`);
+                          setEntryForm({ ...entryForm, dtNfe: prev });
+                          if (dtNfeRef.current) dtNfeRef.current.value = prev || '';
+                          return;
+                        }
+                      }
+                      if (!/^\d{4}-\d{2}-\d{2}$/.test(sanitized) || !isValidIsoDate(sanitized)) { setDtNfeError('Data inválida'); setEntryForm({ ...entryForm, dtNfe: prev }); if (dtNfeRef.current) dtNfeRef.current.value = prev || ''; return; }
+                      const [y, m, d] = sanitized.split('-').map(Number);
+                      if (m === 2 && d === 29 && !isLeapYear(y)) { setDtNfeError(`Data inválida — ${y} não é ano bissexto (29/02/${y} não existe)`); setEntryForm({ ...entryForm, dtNfe: prev }); if (dtNfeRef.current) dtNfeRef.current.value = prev || ''; return; }
+                      setDtNfeError('');
+                      setEntryForm({ ...entryForm, dtNfe: sanitized });
+                      lastValidDtRef.current = sanitized;
                     }}
                   />
                   <button type="button" onClick={openDatePicker} aria-label="Abrir calendário" title="Abrir calendário" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff', padding: 6, borderRadius: 4 }}>
@@ -469,6 +587,22 @@ export default function MovementsPage() {
                 ) : (
                   <small style={{ display: 'block', marginTop: 6, color: '#666' }}>Você pode usar o calendário ou digitar no formato <code>AAAA-MM-DD</code></small>
                 )}
+              </label>
+              <label>
+                Fornecedor
+                <select
+                  value={entryForm.supplierId}
+                  onChange={(event) =>
+                    setEntryForm({ ...entryForm, supplierId: event.target.value })
+                  }
+                >
+                  <option value="">Sem fornecedor</option>
+                  {suppliers.map((supplier) => (
+                    <option key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
                 Quantidade
@@ -545,6 +679,7 @@ export default function MovementsPage() {
                 <input
                   type="number"
                   min={1}
+                  max={5}
                   value={quantity}
                   onChange={(event) => setQuantity(Number(event.target.value))}
                 />
@@ -618,7 +753,7 @@ export default function MovementsPage() {
       </section>
 
       <section className="table-card">
-        <h3>Itens recomendados</h3>
+        <h3>Registros</h3>
         <table>
           <thead>
             <tr>
@@ -666,6 +801,8 @@ export default function MovementsPage() {
                             dtNfe: (product as any).dtNfe ? new Date((product as any).dtNfe).toISOString().slice(0,10) : today,
                             quantity: 1,
                           });
+                          // ensure last valid date ref matches the programmatic value
+                          lastValidDtRef.current = (product as any).dtNfe ? new Date((product as any).dtNfe).toISOString().slice(0,10) : today;
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
                       >

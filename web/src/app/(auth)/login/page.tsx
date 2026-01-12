@@ -17,9 +17,21 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await apiFetch<{ accessToken: string }>('/auth/login', {
+      // Accept local-part (username) or full email. If only username provided, append domain.
+      let loginEmail = email.trim();
+      if (!loginEmail) {
+        setError('Informe o usuário ou e-mail');
+        setLoading(false);
+        return;
+      }
+      if (!loginEmail.includes('@')) {
+        loginEmail = `${loginEmail}@emserh.ma.gov.br`;
+      }
+      loginEmail = loginEmail.toLowerCase();
+
+      const data = await apiFetch<{ accessToken: string }>("/auth/login", {
         method: 'POST',
-        body: { email, password },
+        body: { email: loginEmail, password },
       });
       setToken(data.accessToken);
       router.replace('/dashboard');
@@ -39,18 +51,19 @@ export default function LoginPage() {
           <span className="logo-text">| GTIC</span>
         </div>
         <p className="logo-subtitle">Sistema de Controle de Estoque</p>
-        <h1>Entrar</h1>
-        <p>Acesse o painel do estoque</p>
+        <h2>Login</h2>
+        <p></p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
-            Email
+            Usuário / Email
             <input
-              type="email"
-              placeholder="admin@email.com"
+              type="text"
+              placeholder="joao.parga ou joao.parga@emserh.ma.gov.br"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
             />
+           
           </label>
           <label>
             Senha

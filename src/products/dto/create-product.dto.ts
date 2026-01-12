@@ -1,4 +1,4 @@
-import { IsDateString, IsInt, IsOptional, IsString, Min, MinLength } from 'class-validator';
+import { IsDateString, IsInt, IsOptional, IsString, Min, MinLength, Matches } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -18,6 +18,7 @@ export class CreateProductDto {
   nfe?: string;
 
   @IsOptional()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'A data deve estar no formato AAAA-MM-DD' })
   @IsDateString()
   dtNfe?: string;
 

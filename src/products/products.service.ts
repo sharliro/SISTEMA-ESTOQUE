@@ -29,6 +29,16 @@ export class ProductsService {
     return this.prisma.product.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
+  async manufacturers() {
+    // Return a list of distinct, non-null manufacturer names sorted alphabetically
+    const rows = await this.prisma.product.groupBy({
+      by: ['manufacturer'],
+      where: { manufacturer: { not: null } },
+      orderBy: { manufacturer: 'asc' },
+    });
+    return rows.map(r => r.manufacturer).filter(Boolean) as string[];
+  }
+
   async getById(id: string) {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) {
@@ -49,10 +59,16 @@ export class ProductsService {
         dtNfe: dto.dtNfe ? new Date(dto.dtNfe) : undefined,
         dtInclu: dto.dtInclu ? new Date(dto.dtInclu) : undefined,
         horaInclu: dto.horaInclu ?? undefined,
+        quantity: dto.quantity ?? undefined,
         nchagpc: dto.nchagpc ?? undefined,
         sector: dto.sector ?? undefined,
         unit: dto.unit ?? undefined,
       },
     });
+  }
+
+  async delete(id: string) {
+    await this.getById(id);
+    return this.prisma.product.delete({ where: { id } });
   }
 }

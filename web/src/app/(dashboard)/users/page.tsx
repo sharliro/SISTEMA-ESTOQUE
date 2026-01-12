@@ -42,9 +42,30 @@ export default function UsersPage() {
     setLoading(true);
     setError('');
     try {
+      // normalize and enforce domain for email
+      let finalEmail = form.email ? form.email.trim().toLowerCase() : undefined;
+      if (finalEmail) {
+        if (finalEmail.includes('@')) {
+          if (!finalEmail.endsWith('@emserh.ma.gov.br')) {
+            setError('O email deve usar o domínio @emserh.ma.gov.br');
+            setLoading(false);
+            return;
+          }
+        } else {
+          const localPart = finalEmail.toLowerCase();
+          if (!/^[a-z0-9._-]+$/.test(localPart)) {
+            setError('Digite apenas o usuário do email (ex: joao.parga)');
+            setLoading(false);
+            return;
+          }
+          finalEmail = `${localPart}@emserh.ma.gov.br`;
+        }
+      }
+
+      const payload = { ...form, name: form.name.trim(), email: finalEmail };
       await apiFetch('/users', {
         method: 'POST',
-        body: form,
+        body: payload,
       });
       setForm({ name: '', email: '', matricula: '', password: '', role: 'USER' });
       await loadUsers();
@@ -77,41 +98,54 @@ export default function UsersPage() {
     <div className="page">
       <header className="page-header">
         <div>
-          <h1>Usuarios</h1>
+          <h1>Usuários</h1>
           <p>Somente administradores podem criar contas.</p>
         </div>
       </header>
 
       <section className="form-card">
         <h3>Novo usuario</h3>
-        <form className="grid-form" onSubmit={handleSubmit}>
+        <form className="inline-form-row" onSubmit={handleSubmit}>
           <label>
             Nome
-            <input
+            <input className="select-control"
               value={form.name}
-              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              onChange={(event) => setForm({ ...form, name: event.target.value.toUpperCase() })}
               required
             />
           </label>
           <label>
             Email
-            <input
-              type="email"
-              value={form.email}
-              onChange={(event) => setForm({ ...form, email: event.target.value })}
-              required
-            />
+            <div className="input-with-suffix">
+              <input className="select-control"
+                type="text"
+                placeholder="JOAO.PARGA"
+                value={form.email}
+                onChange={(event) => {
+                  // Always display only the local-part (username) in uppercase.
+                  let v = event.target.value.toUpperCase().replace(/\s/g, '');
+                  const atIdx = v.indexOf('@');
+                  if (atIdx !== -1) {
+                    v = v.slice(0, atIdx);
+                  }
+                  setForm({ ...form, email: v });
+                }}
+                required
+              />
+              <span className="suffix">@emserh.ma.gov.br</span>
+            </div>
+            <small className="muted">Digite apenas o usuário; o domínio <strong>@emserh.ma.gov.br</strong> será anexado automaticamente.</small>
           </label>
           <label>
             Matricula
-            <input
+            <input className="select-control"
               value={form.matricula}
-              onChange={(event) => setForm({ ...form, matricula: event.target.value })}
+              onChange={(event) => setForm({ ...form, matricula: event.target.value.toUpperCase() })}
             />
           </label>
           <label>
             Senha
-            <input
+            <input className="select-control"
               type="password"
               value={form.password}
               onChange={(event) => setForm({ ...form, password: event.target.value })}
@@ -120,7 +154,7 @@ export default function UsersPage() {
           </label>
           <label>
             Perfil
-            <select
+            <select className="select-control"
               value={form.role}
               onChange={(event) =>
                 setForm({ ...form, role: event.target.value as 'ADMIN' | 'USER' })
@@ -146,7 +180,7 @@ export default function UsersPage() {
               <th>Matricula</th>
               <th>Perfil</th>
               <th>Criado em</th>
-              <th>Acoes</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>

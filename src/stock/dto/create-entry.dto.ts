@@ -5,13 +5,13 @@ export class CreateEntryDto {
   @MinLength(1)
   name!: string;
 
-  @IsOptional()
   @IsString()
-  manufacturer?: string;
+  @MinLength(1)
+  manufacturer!: string;
 
-  @IsOptional()
   @IsString()
-  model?: string;
+  @MinLength(1)
+  model!: string;
 
   @IsOptional()
   @IsString()
@@ -36,4 +36,8 @@ export class CreateEntryDto {
   @IsOptional()
   @IsString()
   unit?: string;
+
+  @IsOptional()
+  @IsString()
+  supplierId?: string;
 }

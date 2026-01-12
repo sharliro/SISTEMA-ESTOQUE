@@ -64,14 +64,37 @@ model Sector {
   @@unique([name, unitId])
 }
 
-model Movement {
-  id        String        @id @default(uuid())
-  productId String
-  userId    String
-  type      MovementType
-  quantity  Int
-  createdAt DateTime      @default(now())
+model Supplier {
+  id        String   @id @default(uuid())
+  name      String
+  contact   String?
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  movements Movement[]
+}
 
-  product Product @relation(fields: [productId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+model Manufacturer {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  contact   String?
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+}
+
+model Movement {
+  id         String        @id @default(uuid())
+  productId  String
+  userId     String
+  supplierId String?
+  type       MovementType
+  quantity   Int
+  createdAt  DateTime      @default(now())
+
+  product  Product  @relation(fields: [productId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  supplier Supplier? @relation(fields: [supplierId], references: [id])
 }

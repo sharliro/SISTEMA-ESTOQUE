@@ -24,6 +24,7 @@ export class StockService {
           userId,
           type: 'IN',
           quantity: dto.quantity,
+          supplierId: dto.supplierId ?? null,
         },
       });
       return { product: updated, movement };
@@ -57,6 +58,7 @@ export class StockService {
           userId,
           type: 'IN',
           quantity: dto.quantity,
+          supplierId: dto.supplierId ?? null,
         },
       });
 
@@ -70,12 +72,38 @@ export class StockService {
       if (!product) {
         throw new NotFoundException('Produto nao encontrado');
       }
+
+      // Enforce maximum quantity per exit operation
+      if (dto.quantity > 5) {
+        throw new BadRequestException('Quantidade máxima por saída é 5 unidades');
+      }
+
+      // Require unitId and sectorId for exits
+      if (!dto.unitId || !dto.sectorId) {
+        throw new BadRequestException('Unidade e setor sao obrigatorios para saida');
+      }
+
+      // Validate unit and sector existence and relation
+      const unit = await tx.unit.findUnique({ where: { id: dto.unitId } });
+      if (!unit) {
+        throw new NotFoundException('Unidade nao encontrada');
+      }
+      const sector = await tx.sector.findFirst({ where: { id: dto.sectorId, unitId: dto.unitId } });
+      if (!sector) {
+        throw new NotFoundException('Setor nao encontrado para essa unidade');
+      }
+
       if (product.quantity < dto.quantity) {
         throw new BadRequestException('Estoque insuficiente');
       }
       const updated = await tx.product.update({
         where: { id: product.id },
-        data: { quantity: product.quantity - dto.quantity },
+        data: {
+          quantity: product.quantity - dto.quantity,
+          nchagpc: dto.nchagpc ?? product.nchagpc,
+          sector: sector.name,
+          unit: unit.name,
+        },
       });
       const movement = await tx.movement.create({
         data: {
@@ -83,6 +111,7 @@ export class StockService {
           userId,
           type: 'OUT',
           quantity: dto.quantity,
+          supplierId: dto.supplierId ?? null,
         },
       });
       return { product: updated, movement };
